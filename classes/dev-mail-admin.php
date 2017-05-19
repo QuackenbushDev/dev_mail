@@ -1,6 +1,6 @@
 <?php
 
-namespace quackenbushdev\devmailer;
+namespace quackenbushdev\devmail;
 
 /**
  * Class DevMailAdmin

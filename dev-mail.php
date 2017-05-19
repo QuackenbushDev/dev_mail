@@ -9,8 +9,8 @@ Author URI: http://christopher.quackenbush.me
 License: MIT
 */
 
-use quackenbushdev\devmailer\DevMailPostType;
-use quackenbushdev\devmailer\DevMailAdmin;
+use quackenbushdev\devmail\DevMailPostType;
+use quackenbushdev\devmail\DevMailAdmin;
 
 class DevMailer {
 	/**
