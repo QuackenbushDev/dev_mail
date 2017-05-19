@@ -4,7 +4,7 @@ namespace quackenbushdev\devmail;
 
 /**
  * Class DevMailPostType
- * @package quackenbushdev\devmailer
+ * @package quackenbushdev\devmail
  */
 class DevMailPostType {
 	/**

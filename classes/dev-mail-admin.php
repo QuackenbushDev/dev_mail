@@ -4,7 +4,7 @@ namespace quackenbushdev\devmail;
 
 /**
  * Class DevMailAdmin
- * @package quackenbushdev\devmailer
+ * @package quackenbushdev\devmail
  */
 class DevMailAdmin {
 	/**
