@@ -3,7 +3,7 @@ Dev Mail
 
 Homepage: https://github.com/QuackenbushDev/dev_mail/
 
-Latest release: v1.0
+Latest release: v1.0.1
 
 Plugin description:
 
@@ -14,4 +14,3 @@ Road map:
 
 - Support external forwarding for testing.
 - Allow the developer to specify a maximum number of e-mails to keep in the archive at any given time.
-

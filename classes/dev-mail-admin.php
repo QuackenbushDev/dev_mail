@@ -2,13 +2,21 @@
 
 namespace quackenbushdev\devmail;
 
+if (!defined('ABSPATH')) {
+	exit; // Exit if accessed directly
+}
+
 /**
  * Class DevMailAdmin
  * @package quackenbushdev\devmail
+ * @version 1.0.2
+ * @since 1.0.0
  */
 class DevMailAdmin {
 	/**
 	 * DevMailAdmin constructor.
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 		add_filter('manage_dev_mail_posts_columns', [$this, 'list_view_modify_columns'], 10, 1);
@@ -18,6 +26,7 @@ class DevMailAdmin {
 	/**
 	 * Adds the required custom columns to the list view for dev_mail post type
 	 *
+	 * @since 1.0.0
 	 * @param $columns
 	 *
 	 * @return array
@@ -36,6 +45,7 @@ class DevMailAdmin {
 	/**
 	 * Populates the custom columns for the list view on dev_mail post type
 	 *
+	 * @since 1.0.0
 	 * @param $column
 	 * @param $post_id
 	 */

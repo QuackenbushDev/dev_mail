@@ -3,53 +3,101 @@
 Plugin Name: Dev Mail
 Plugin URI: https://github.com/QuackenbushDev/dev_mail/
 Description: This plugin captures all system e-mails for testing without externally delivering any messages.
-Version: 1.0
+Version: 1.0.1
 Author: Christopher Quackenbush
 Author URI: http://christopher.quackenbush.me
 License: MIT
 */
 
-use quackenbushdev\devmail\DevMailPostType;
-use quackenbushdev\devmail\DevMailAdmin;
+if (!defined('ABSPATH')) {
+	exit; // Exit if accessed directly
+}
 
-class DevMailer {
+/**
+ * Class DevMailer
+ *
+ * @version 1.0.2
+ * @since 1.0.0
+ */
+class DevMail {
 	/**
 	 * This variable is automatically set at run-time to the location of the classes directory.
 	 *
+	 * @since 1.0.0
 	 * @var string
 	 */
 	private $include_directory = '';
 
 	/**
+	 * Template include directory for loading our mail view correctly.
+	 *
+	 * @var string
+	 */
+	private $plugin_directory = '';
+
+	/**
 	 * This array keeps a copy of all loaded classes for possible later use
 	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private $loaded = [];
 
 	/**
+	 * Store all notices in an array for displaying as an admin notice.
+	 *
+	 * @since 1.0.0
 	 * @var array
 	 */
 	private $notices = [];
 
 	/**
-	 * DevMailer constructor.
+	 * Gets the current plugin instance, or initializes a new instance
+	 *
+	 * @since 1.0.1
+	 * @return DevMail
 	 */
-	public function __construct() {
+	public static function get_instance()
+	{
+		static $instance = null;
+
+		if ($instance === null) {
+			$instance = new DevMail();
+			$instance->init();
+		}
+
+		return $instance;
+	}
+
+	/**
+	 * DevMail init function.
+	 *
+	 * @since 1.0.1
+	 */
+	public function init() {
 		$dependencies = [
-			'dev-mail-post-type.php' => DevMailPostType::class,
-			'dev-mail-admin.php' => DevMailAdmin::class
+			'dev-mail-post-type.php' => quackenbushdev\devmail\DevMailPostType::class,
+			'dev-mail-admin.php'     => quackenbushdev\devmail\DevMailAdmin::class,
+			'dev-mail-rest.php'      => quackenbushdev\devmail\DevMailRest::class,
 		];
+		$this->plugin_directory = plugin_dir_path(__FILE__);
 
 		$this->load_dependencies($dependencies);
 		$this->bind_wp_mail();
 
-		add_action('admin_notices', [$this, 'display_dev_mail_notices']);
+		add_action('admin_notices', [$this, 'display_notices']);
+
+		register_deactivation_hook(__FILE__, [$this, 'clear_all_messages']);
+
+		if (version_compare(PHP_VERSION, '7.0', '<')) {
+			$this->add_notice('error', 'PHP v7.0 or later is required for dev mail');
+		}
 	}
 
 	/**
 	 * Adds a notice to the notices array for rendering at a later stage
 	 *
+	 * @since 1.0.1
 	 * @param string $type
 	 * @param string $message
 	 */
@@ -63,8 +111,10 @@ class DevMailer {
 
 	/**
 	 * Render wp admin notices
+	 *
+	 * @since 1.0.1
 	 */
-	public function display_wp_mail_error() {
+	public function display_notices() {
 		foreach ($this->notices as $type => $notices) {
 			foreach ($notices as $notice) {
 				echo '<div class="' . $type . '"><p>Dev Mail: ' . $notice . '</p></div>';
@@ -73,8 +123,37 @@ class DevMailer {
 	}
 
 	/**
+	 * Clears all stored e-mails in the system
+	 *
+	 * @since 1.0.1
+	 */
+	public function clear_all_messages() {
+		$posts = get_posts(['post_type' => 'dev_mail']);
+
+		foreach ($posts as $post_id) {
+			wp_delete_post($post_id, true);
+		}
+
+		$this->add_notice('success', 'Cleared all dev messages');
+	}
+
+	/**
+	 * Returns the current plugin directory
+	 *
+	 * @return string
+	 */
+	public static function get_plugin_path() {
+		return self::get_instance()->plugin_directory;
+	}
+
+	public static function get_asset_url($path) {
+		return plugins_url('assets' . DIRECTORY_SEPARATOR . $path, __FILE__);
+	}
+
+	/**
 	 * Loads an array of dependencies that are required by the plugin.
 	 *
+	 * @somce 1.0.0
 	 * @param $dependencies
 	 */
 	private function load_dependencies($dependencies) {
@@ -86,6 +165,7 @@ class DevMailer {
 	/**
 	 * Dynamically registers a class
 	 *
+	 * @since 1.0.0
 	 * @param string $file
 	 * @param mixed $class
 	 *
@@ -108,6 +188,8 @@ class DevMailer {
 
 	/**
 	 * Rebind the native wp_mail to a function that creates a log in the system
+	 *
+	 * @since 1.0.0
 	 */
 	private function bind_wp_mail() {
 		if (!defined('wp_mail')) {
@@ -115,10 +197,10 @@ class DevMailer {
 				wp_insert_post(
 					[
 						'post_title'    => $subject,
-						'post_excerpt'  => $message,
+						'post_content'  => $message,
 						'post_type'     => 'dev_mail',
 						'post_status'   => 'publish',
-						'post_password' => wp_generate_password(),
+						'post_password' => wp_generate_password(12, false),
 						'meta_input'    => [
 							'_to'          => $to,
 							'_headers'     => $headers,
@@ -135,4 +217,4 @@ class DevMailer {
 	}
 }
 
-new DevMailer();
+DevMail::get_instance();
